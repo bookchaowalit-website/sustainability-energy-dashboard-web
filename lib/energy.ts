@@ -1,10 +1,10 @@
 // Load room: a synthetic 24-hour load curve, three sample sites and the chart maths. No meter, no API.
 
-export type Site = { name: string; load: number; tint: string; detail: string };
+export type Site = { name: string; load: number; tint: "amber" | "blue" | "green"; detail: string; note: string };
 export const SITES: Site[] = [
-  { name: "North workshop", load: 184, tint: "amber", detail: "late shift / machines" },
-  { name: "Learning hall", load: 128, tint: "cyan", detail: "day class / cooling" },
-  { name: "Garden office", load: 74, tint: "green", detail: "small load / daylight" },
+  { name: "North workshop", load: 184, tint: "amber", detail: "Late shift, machines", note: "Machines run past 20:00; most of the evening load is here." },
+  { name: "Learning hall", load: 128, tint: "blue", detail: "Day classes, cooling", note: "Check cooling after 13:00, when the building peaks." },
+  { name: "Garden office", load: 74, tint: "green", detail: "Small load, daylight", note: "Daylight keeps lighting low; little to change." },
 ];
 /** Sample load per hour (00:00 to 23:00), in kWh. */
 export const HOURS = [18, 14, 12, 10, 9, 11, 17, 34, 57, 69, 76, 82, 88, 94, 91, 83, 76, 68, 61, 54, 46, 38, 29, 22];
@@ -24,10 +24,29 @@ export function peakOf(reading: number[]): { value: number; hour: string } {
   return { value, hour: `${String(reading.indexOf(value)).padStart(2, "0")}:00` };
 }
 
-/** SVG polyline points on a 1000 x 330 board; 100 kWh reaches the top line. */
-export function chartPoints(reading: number[]): string {
-  const last = Math.max(reading.length - 1, 1);
-  return reading.map((value, index) => `${(index / last) * 1000},${280 - (Math.min(value, 100) / 100) * 220}`).join(" ");
+/** Labels for the period switch. */
+export const WINDOW_LABELS: Record<WindowName, string> = { TODAY: "Today", YESTERDAY: "Yesterday", "WEEK AVG": "Week avg" };
+
+/** Hour labels 00:00 to 23:00 for a reading. */
+export function hourLabels(reading: number[]): string[] {
+  return reading.map((_, index) => `${String(index).padStart(2, "0")}:00`);
+}
+
+/** Sum of the hourly values, in kWh. */
+export function totalOf(reading: number[]): number {
+  return reading.reduce((sum, value) => sum + value, 0);
+}
+
+/** Lowest value and the first hour it happens, as HH:00. */
+export function lowOf(reading: number[]): { value: number; hour: string } {
+  const value = Math.min(...reading);
+  return { value, hour: `${String(reading.indexOf(value)).padStart(2, "0")}:00` };
+}
+
+/** A site's share of all sites' load, as a whole percent. */
+export function shareOf(site: Site, sites: Site[] = SITES): number {
+  const all = totalOf(sites.map((entry) => entry.load));
+  return all ? Math.round((site.load / all) * 100) : 0;
 }
 
 export function findSite(name: string): Site {
