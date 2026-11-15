@@ -42,4 +42,5 @@ variable set lower down never reaches them.
    chart panel + breakdown panel → data note → footer.
 4. Add `components/**/*.tsx` to the coverage `include` and write mounted (happy-dom) tests for
    the period switch, the table view and the breakdown selection.
-5. Screenshot 320 / 375 / 768 / 1440 in light and dark, once with the table view open.
+5. Screenshot 320 / 375 / 500 / 768 / 1440 in light and dark, once with the table view open
+   (500px is where an auto-fit grid quietly turns back into two columns).

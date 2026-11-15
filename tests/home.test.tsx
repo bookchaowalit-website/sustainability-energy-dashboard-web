@@ -57,6 +57,11 @@ describe("energy dashboard", () => {
     press(button("Show chart"));
     expect($("svg")).not.toBeNull();
     expect([...host.querySelectorAll(".ds-chart-x span")].map((s) => s.textContent)).toEqual(["00:00", "06:00", "12:00", "18:00", "23:00"]);
+    // Labels use the line's x scale: hour 12 of 0–23 is 52.17%, not the middle.
+    const left = [...host.querySelectorAll<HTMLElement>(".ds-chart-x span")].map((s) => s.style.left);
+    expect(left[0]).toBe("0%");
+    expect(parseFloat(left[2])).toBeCloseTo((12 / 23) * 100, 3);
+    expect(left[4]).toBe("100%");
   });
 
   it("selects a site and shows its note", () => {

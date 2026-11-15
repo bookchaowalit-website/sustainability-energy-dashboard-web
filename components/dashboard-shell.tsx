@@ -116,7 +116,13 @@ export function ChartPanel({ title, subtitle, summary, values, labels, ticks, ma
             {peak >= 0 ? <line className="ds-chart-peak" x1={(peak / Math.max(values.length - 1, 1)) * 1000} x2={(peak / Math.max(values.length - 1, 1)) * 1000} y1="0" y2="100" /> : null}
             <polyline className="ds-chart-line" points={points} />
           </svg>
-          <div className="ds-chart-x" aria-hidden="true">{ticks.map((tick) => <span key={tick}>{labels[tick]}</span>)}</div>
+          <div className="ds-chart-x" aria-hidden="true">
+            {ticks.map((tick) => {
+              // Same x scale as linePoints, so each label sits under its own point.
+              const at = tick / Math.max(values.length - 1, 1);
+              return <span key={tick} style={{ left: `${at * 100}%` }} data-edge={at === 0 ? "start" : at === 1 ? "end" : undefined}>{labels[tick]}</span>;
+            })}
+          </div>
         </div>
       )}
     </section>
