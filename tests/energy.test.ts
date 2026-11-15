@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HOURS, SITES, WINDOWS, chartPoints, findSite, peakOf, readingFor } from "@/lib/energy";
+import { HOURS, SITES, WINDOWS, WINDOW_LABELS, findSite, hourLabels, lowOf, peakOf, readingFor, shareOf, totalOf } from "@/lib/energy";
 
 describe("sample curve", () => {
   it("has one value per hour of the day", () => {
@@ -27,13 +27,23 @@ describe("peakOf", () => {
   });
 });
 
-describe("chartPoints", () => {
-  it("spreads points across the board and maps 0 and 100 kWh to the bottom and top lines", () => {
-    expect(chartPoints([0, 50, 100])).toBe("0,280 500,170 1000,60");
+describe("summaries", () => {
+  it("totals the day and finds the quietest hour", () => {
+    expect(totalOf(HOURS)).toBe(1159);
+    expect(totalOf([])).toBe(0);
+    expect(lowOf(HOURS)).toEqual({ value: 9, hour: "04:00" });
+    expect(lowOf([3, 1, 1])).toEqual({ value: 1, hour: "01:00" });
   });
 
-  it("clamps values above 100 to the top line and copes with a single point", () => {
-    expect(chartPoints([150])).toBe("0,60");
+  it("labels each hour and each window", () => {
+    expect(hourLabels([1, 2, 3])).toEqual(["00:00", "01:00", "02:00"]);
+    expect(hourLabels(HOURS).at(-1)).toBe("23:00");
+    expect(WINDOW_LABELS["WEEK AVG"]).toBe("Week avg");
+  });
+
+  it("gives each site its share of all sites, and 0 when there is no load", () => {
+    expect(SITES.map((site) => shareOf(site))).toEqual([48, 33, 19]);
+    expect(shareOf({ ...SITES[0], load: 0 }, [{ ...SITES[0], load: 0 }])).toBe(0);
   });
 });
 
