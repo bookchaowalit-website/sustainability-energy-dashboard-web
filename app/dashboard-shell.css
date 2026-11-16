@@ -1,14 +1,15 @@
 /*
  * Dashboard shell (2026-11-15): the shared calm, Apple-like look for read-only data pages
- * (energy, status, uptime, analytics). A head with one period switch, up to four stat tiles,
- * one main chart with a table view, and a breakdown list. Same palette as the App shell
+ * (energy, status, uptime, analytics, small calculators). A head with one period switch, up to four
+ * stat tiles, one main chart with a table view, a breakdown list, and plain form fields for inputs. Same palette as the App shell
  * (app-shell.css), with a --ds-* prefix so both can live in one app. Copy this file and
  * components/dashboard-shell.tsx into the next dashboard; see DASHBOARD.md.
  *
  * Text pairs pass 4.5:1 in both themes: --ds-muted on --ds-surface 5.1:1 (light) / 6.6:1 (dark),
  * --ds-muted on --ds-bg 4.7:1 / 8.2:1, --ds-accent on --ds-surface 5.6:1 / 5.6:1,
  * --ds-grey on --ds-selected 6.5:1 / 8.3:1 (--ds-muted there is only 4.15:1, so selected rows use --ds-grey);
- * pill text on its tint 5.6–8.3:1. Chart line (--ds-chart) on the surface is 4.7:1 / 5.6:1 (graphics need 3:1).
+ * pill text on its tint 5.6–8.3:1; --ds-on-accent on --ds-accent 5.6:1 / 7.0:1; field borders (--ds-field-line) on the
+ * surface 3.3:1 / 4.0:1 (input edges need 3:1). Chart line (--ds-chart) on the surface is 4.7:1 / 5.6:1 (graphics need 3:1).
  */
 :root {
   --ds-bg: #f5f5f7;
@@ -23,6 +24,8 @@
   --ds-chart: #0071e3;
   --ds-chart-fill: rgb(0 113 227 / 10%);
   --ds-focus: #0071e3;
+  --ds-on-accent: #ffffff;
+  --ds-field-line: #8e8e93;
   --ds-green: #136c2e; --ds-green-bg: #e3f5e8;
   --ds-amber: #8a5300; --ds-amber-bg: #fdf0d5;
   --ds-grey: #515154; --ds-grey-bg: #ececf0;
@@ -35,6 +38,7 @@
   :root {
     --ds-bg: #000000; --ds-surface: #1c1c1e; --ds-fg: #f5f5f7; --ds-muted: #a1a1a6; --ds-line: #38383a; --ds-grid: #2c2c2e;
     --ds-hover: rgb(255 255 255 / 6%); --ds-selected: #2c2c2e; --ds-accent: #2997ff; --ds-chart: #2997ff; --ds-chart-fill: rgb(41 151 255 / 16%); --ds-focus: #2997ff;
+    --ds-on-accent: #000000; --ds-field-line: #7c7c80;
     --ds-green: #30d158; --ds-green-bg: #0f2e18; --ds-amber: #ffd60a; --ds-amber-bg: #3a2e00; --ds-grey: #c7c7cc; --ds-grey-bg: #2c2c2e; --ds-red: #ff8a80; --ds-red-bg: #3b1513;
     --ds-shadow: none;
   }
@@ -42,7 +46,7 @@
 
 .ds { min-height: 100vh; background: var(--ds-bg); color: var(--ds-fg); font-family: var(--ds-font); -webkit-font-smoothing: antialiased; }
 .ds *, .ds *::before, .ds *::after { box-sizing: border-box; }
-:where(.ds) :where(button, input, select) { font: inherit; color: inherit; }
+:where(.ds) :where(button, input, select, textarea) { font: inherit; color: inherit; }
 :where(.ds) :focus-visible { outline: 3px solid var(--ds-focus); outline-offset: 2px; }
 .ds-skip { position: absolute; left: 8px; top: -64px; z-index: 50; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 980px; background: var(--ds-surface); border: 2px solid var(--ds-focus); color: var(--ds-fg); }
 .ds-skip:focus { top: 8px; }
@@ -106,26 +110,42 @@
 .ds-table tr:last-child td, .ds-table tr:last-child th { border-bottom: 0; }
 .ds-table [data-peak="true"] { font-weight: 700; }
 
-/* Breakdown list: name, detail, value and a share bar; a button when it selects something. */
+/* Breakdown list: name, detail, value and a share bar. A <button class="ds-row"> selects something;
+   on an <li> or <div> the row is static (no hover). */
 .ds-rows { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
-.ds-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; width: 100%; min-height: 64px; padding: 10px 12px; border: 0; border-radius: 12px; background: transparent; text-align: left; cursor: pointer; }
-.ds-row:hover { background: var(--ds-hover); }
+.ds-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; width: 100%; min-height: 64px; padding: 10px 12px; border: 0; border-radius: 12px; background: transparent; text-align: left; }
+button.ds-row { cursor: pointer; }
+button.ds-row:hover { background: var(--ds-hover); }
 .ds-row[aria-pressed="true"] { background: var(--ds-selected); }
-.ds-row-name { display: flex; align-items: center; min-width: 0; font-size: 15px; font-weight: 600; }
-.ds-row-detail { grid-column: 1; color: var(--ds-muted); font-size: 13px; }
-.ds-row[aria-pressed="true"] .ds-row-detail, .ds-row:hover .ds-row-detail { color: var(--ds-grey); }
+.ds-row-name { display: flex; align-items: center; min-width: 0; overflow-wrap: anywhere; font-size: 15px; font-weight: 600; }
+.ds-row-detail { grid-column: 1; min-width: 0; overflow-wrap: anywhere; color: var(--ds-muted); font-size: 13px; }
+.ds-row[aria-pressed="true"] .ds-row-detail, button.ds-row:hover .ds-row-detail { color: var(--ds-grey); }
 .ds-row-value { grid-column: 2; grid-row: 1 / span 2; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.ds-meter { grid-column: 1 / -1; height: 6px; border-radius: 980px; background: var(--ds-grey-bg); overflow: hidden; }
+.ds-meter { display: block; grid-column: 1 / -1; height: 6px; border-radius: 980px; background: var(--ds-grey-bg); overflow: hidden; }
 .ds-meter span { display: block; height: 100%; border-radius: inherit; background: var(--ds-chart); }
 .ds-dot { flex: none; display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; background: #8e8e93; }
 .ds-dot[data-tone="amber"] { background: #e0a100; }
 .ds-dot[data-tone="green"] { background: #34c759; }
 .ds-dot[data-tone="blue"] { background: #0a84ff; }
+.ds-dot[data-tone="red"] { background: #ff3b30; }
 
 /* Detail callout under the breakdown */
 .ds-callout { display: grid; gap: 4px; margin-top: 12px; padding: 14px 16px; border-radius: 12px; background: var(--ds-bg); }
 .ds-callout strong { font-size: 15px; }
 .ds-callout span { color: var(--ds-muted); font-size: 14px; line-height: 1.5; }
+.ds-callout a, .ds-note a { color: var(--ds-accent); text-decoration: underline; text-underline-offset: 3px; }
+
+/* Inputs: labelled fields, one filled button per panel, a slider. */
+.ds-form { display: grid; gap: 16px; }
+.ds-field { display: grid; gap: 6px; color: var(--ds-muted); font-size: 13px; font-weight: 600; }
+.ds-field-row { display: flex; justify-content: space-between; gap: 12px; }
+.ds-field-row b { color: var(--ds-fg); font-size: 15px; font-variant-numeric: tabular-nums; }
+.ds-input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--ds-field-line); border-radius: 10px; background: var(--ds-surface); color: var(--ds-fg); font-size: 15px; font-weight: 400; }
+textarea.ds-input { min-height: 220px; resize: vertical; font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; line-height: 1.5; }
+.ds-range { width: 100%; min-height: 44px; margin: 0; accent-color: var(--ds-accent); cursor: pointer; }
+.ds-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ds-button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 20px; border: 0; border-radius: 980px; background: var(--ds-accent); color: var(--ds-on-accent); font-size: 15px; font-weight: 600; cursor: pointer; }
+.ds-button:hover { filter: brightness(1.08); }
 
 .ds-pill { display: inline-flex; align-items: center; min-height: 26px; padding: 0 10px; border-radius: 980px; font-size: 13px; font-weight: 600; white-space: nowrap; }
 .ds-pill[data-tone="green"] { color: var(--ds-green); background: var(--ds-green-bg); }
@@ -147,8 +167,8 @@
   .ds-segmented button { min-width: 0; }
   .ds-panel { padding: 16px; }
   .ds-chart { grid-template-rows: 200px auto; }
-  /* Five hour labels do not fit at 320px: keep the first, middle and last. */
-  .ds-chart-x span:nth-child(even) { display: none; }
+  /* Five hour labels do not fit at 320px: keep the first, middle and last (never hide the end label). */
+  .ds-chart-x span:nth-child(even):not(:last-child) { display: none; }
   /* Stat tiles become one grouped card: label and note on the left, value on the right. */
   .ds-stats { grid-template-columns: minmax(0, 1fr); gap: 0; border-radius: 18px; background: var(--ds-surface); box-shadow: var(--ds-shadow); }
   .ds-stat { grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; padding: 12px 16px; border-radius: 0; background: transparent; box-shadow: none; }
