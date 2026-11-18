@@ -54,7 +54,7 @@ export default function Home() {
             <div className="ds-panel-head">
               <div>
                 <h2 id="sites-heading">Sites</h2>
-                <p>Last observed load, kWh</p>
+                <p>Last observed load, kWh · fixed sample, same for every period</p>
               </div>
             </div>
             <ul className="ds-rows">

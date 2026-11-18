@@ -44,6 +44,8 @@ describe("energy dashboard", () => {
     expect($(".ds-head p")?.textContent).toContain("Week avg · hourly, in kWh");
     press(button("Yesterday"));
     expect(stats()[2]).toBe("Quietest hour7kWhat 03:00");
+    // The sites list is one fixed sample, so it says the period switch does not change it.
+    expect($('[aria-labelledby="sites-heading"] .ds-panel-head p')?.textContent).toBe("Last observed load, kWh · fixed sample, same for every period");
   });
 
   it("shows every hour as a table and back as a chart", () => {
