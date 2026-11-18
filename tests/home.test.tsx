@@ -53,7 +53,7 @@ describe("energy dashboard", () => {
     const summary = details.querySelector("summary") as HTMLElement;
     press(summary);
     expect(details.open).toBe(true);
-    const rows = [...details.querySelectorAll(".ds-table tbody tr")];
+    const rows = [...host.querySelectorAll(".ds-table tbody tr")];
     expect(rows).toHaveLength(24);
     expect(rows[13].textContent).toBe("13:0094 (peak)");
     expect(rows[13].getAttribute("data-peak")).toBe("true");
