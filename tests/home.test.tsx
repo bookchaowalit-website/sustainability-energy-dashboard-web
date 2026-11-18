@@ -49,14 +49,17 @@ describe("energy dashboard", () => {
   });
 
   it("shows every hour as a table and back as a chart", () => {
-    press(button("Show table"));
-    expect($("svg")).toBeNull();
-    const rows = [...host.querySelectorAll(".ds-table tbody tr")];
+    const details = $("details.ds-chart-switch") as HTMLDetailsElement;
+    const summary = details.querySelector("summary") as HTMLElement;
+    press(summary);
+    expect(details.open).toBe(true);
+    const rows = [...details.querySelectorAll(".ds-table tbody tr")];
     expect(rows).toHaveLength(24);
     expect(rows[13].textContent).toBe("13:0094 (peak)");
     expect(rows[13].getAttribute("data-peak")).toBe("true");
-    expect(button("Show chart").getAttribute("aria-pressed")).toBe("true");
-    press(button("Show chart"));
+    expect(summary.textContent).toBe("Show table");
+    press(summary);
+    expect(details.open).toBe(false);
     expect($("svg")).not.toBeNull();
     expect([...host.querySelectorAll(".ds-chart-x span")].map((s) => s.textContent)).toEqual(["00:00", "06:00", "12:00", "18:00", "23:00"]);
     // Labels use the line's x scale: hour 12 of 0–23 is 52.17%, not the middle.
