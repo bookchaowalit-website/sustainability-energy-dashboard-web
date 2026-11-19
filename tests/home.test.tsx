@@ -47,16 +47,20 @@ describe("energy dashboard", () => {
     // The week average is one average day, so the tile says so rather than "Total".
     expect(stats()[1]).toBe("Daily average973kWhaverage day, 24 hours");
     const loads = () => [...host.querySelectorAll(".ds-row-value")].map((cell) => cell.textContent);
-    expect(loads()).toEqual(["154", "107", "62"]);
+    expect(loads()).toEqual(["464", "323", "186"]);
+    expect($('[aria-labelledby="sites-heading"] .ds-panel-head p')?.textContent).toBe("kWh on an average day · adds up to the 973 kWh total");
     expect($(".ds-head p")?.textContent).toContain("Week avg · hourly, in kWh");
     press(button("Yesterday"));
     expect(stats()[2]).toBe("Quietest hour7kWhat 03:00");
     expect(stats()[1]).toBe("Total1,130kWhover 24 hours");
     // The sites follow the period too.
-    expect($('[aria-labelledby="sites-heading"] .ds-panel-head p')?.textContent).toBe("Load per site, kWh · yesterday");
-    expect(loads()).toEqual(["179", "125", "72"]);
+    expect($('[aria-labelledby="sites-heading"] .ds-panel-head p')?.textContent).toBe("kWh over 24 hours, yesterday · adds up to the 1,130 kWh total");
+    expect(loads()).toEqual(["539", "375", "216"]);
     press(button("Today"));
-    expect(loads()).toEqual(["184", "128", "74"]);
+    expect(loads()).toEqual(["553", "384", "222"]);
+    // Every period: the site parts add up to the building total.
+    const sum = () => loads().reduce((all, value) => all + Number(value?.replace(",", "")), 0);
+    expect(sum()).toBe(1159);
   });
 
   it("shows every hour as a table and back as a chart", () => {

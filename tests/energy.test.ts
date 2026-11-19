@@ -53,3 +53,17 @@ describe("findSite", () => {
     expect(findSite("Nope")).toBe(SITES[0]);
   });
 });
+
+describe("site totals", () => {
+  it("split each period's building total by site and always add up to it", async () => {
+    const { siteTotalsFor } = await import("@/lib/energy");
+    for (const windowName of WINDOWS) {
+      const parts = siteTotalsFor(windowName);
+      expect(parts.reduce((sum, part) => sum + part, 0)).toBe(totalOf(readingFor(windowName)));
+    }
+    // Largest remainder: 10 split 1:1:1 gives the spare unit to the first site.
+    const site = (load: number) => ({ ...SITES[0], load });
+    expect(siteTotalsFor("TODAY", [site(1), site(1), site(1)]).reduce((a, b) => a + b, 0)).toBe(1159);
+    expect(siteTotalsFor("TODAY", [site(0), site(0)])).toEqual([0, 0]);
+  });
+});

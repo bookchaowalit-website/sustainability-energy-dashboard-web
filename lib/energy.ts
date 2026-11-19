@@ -49,10 +49,21 @@ export function shareOf(site: Site, sites: Site[] = SITES): number {
   return all ? Math.round((site.load / all) * 100) : 0;
 }
 
-/** A site's load for a period: its sample load scaled by how that period's day compares with today's. */
-export function siteLoadFor(site: Site, windowName: WindowName): number {
-  const today = totalOf(HOURS);
-  return today ? Math.round((site.load * totalOf(readingFor(windowName))) / today) : 0;
+/**
+ * Each site's part of the building's total for a period, in site order: the total split by the sites' sample loads,
+ * rounded so the parts always add up to the building total (largest remainder).
+ */
+export function siteTotalsFor(windowName: WindowName, sites: Site[] = SITES): number[] {
+  const total = totalOf(readingFor(windowName));
+  const weight = totalOf(sites.map((site) => site.load));
+  if (!weight) return sites.map(() => 0);
+  const exact = sites.map((site) => (total * site.load) / weight);
+  const parts = exact.map(Math.floor);
+  let left = total - totalOf(parts);
+  [...exact.keys()].sort((a, b) => (exact[b] - parts[b]) - (exact[a] - parts[a]) || a - b).forEach((index) => {
+    if (left > 0) { parts[index] += 1; left -= 1; }
+  });
+  return parts;
 }
 
 /** The site with the biggest share. */

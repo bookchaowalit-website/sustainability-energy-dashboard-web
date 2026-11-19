@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChartPanel, DashFoot, DashTop, Pill, Segmented, Stat } from "@/components/dashboard-shell";
-import { SITES, WINDOWS, WINDOW_LABELS, findSite, hourLabels, lowOf, peakOf, readingFor, shareOf, siteLoadFor, topSite, totalOf, type WindowName } from "@/lib/energy";
+import { SITES, WINDOWS, WINDOW_LABELS, findSite, hourLabels, lowOf, peakOf, readingFor, shareOf, siteTotalsFor, topSite, totalOf, type WindowName } from "@/lib/energy";
 
 const PERIODS = WINDOWS.map((id) => ({ id, label: WINDOW_LABELS[id] }));
 const TICKS = [0, 6, 12, 18, 23];
@@ -18,6 +18,7 @@ export default function Home() {
   const period = WINDOW_LABELS[windowName];
   const average = windowName === "WEEK AVG";
   const top = topSite();
+  const siteTotals = siteTotalsFor(windowName);
 
   return (
     <div className="ds">
@@ -58,16 +59,16 @@ export default function Home() {
             <div className="ds-panel-head">
               <div>
                 <h2 id="sites-heading">Sites</h2>
-                <p>Load per site, kWh · {period.toLowerCase()}</p>
+                <p>{average ? "kWh on an average day" : `kWh over 24 hours, ${period.toLowerCase()}`} · adds up to the {total.toLocaleString("en-US")} kWh total</p>
               </div>
             </div>
             <ul className="ds-rows">
-              {SITES.map((site) => (
+              {SITES.map((site, index) => (
                 <li key={site.name}>
                   <button type="button" className="ds-row" aria-pressed={site.name === selected.name} onClick={() => setSelectedSite(site.name)}>
                     <span className="ds-row-name"><span className="ds-dot" data-tone={site.tint} aria-hidden="true" />{site.name}</span>
                     <span className="ds-row-detail">{site.detail} · {shareOf(site)}% of all sites</span>
-                    <span className="ds-row-value">{siteLoadFor(site, windowName)}</span>
+                    <span className="ds-row-value">{siteTotals[index].toLocaleString("en-US")}</span>
                     <span className="ds-meter" data-tone={site.tint} aria-hidden="true"><span style={{ width: `${shareOf(site)}%` }} /></span>
                   </button>
                 </li>
