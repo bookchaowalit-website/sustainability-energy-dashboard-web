@@ -31,3 +31,7 @@ A portfolio visitor who wants to see a calm way to read one building's daily loa
 ## Boundaries
 
 - Browser-only static page; no API routes, storage or network calls of its own.
+
+## Known limits
+
+- Dashboard shell x-axis labels: each label's room is a fixed share of the axis worked out from the tick gaps (`labelRoom`), not from the rendered text, so at 200% text the labels (first and last included) are cut with an ellipsis, and a first or last tick that sits near but not on an axis edge is centred and squeezed to a sliver; the "Show table" view keeps every label in full. Fixing it means measuring the labels in the browser (a ChartPanel change), not a CSS tweak.
