@@ -5,7 +5,10 @@ import { ChartPanel, DashFoot, DashTop, Pill, Segmented, Stat } from "@/componen
 import { SITES, WINDOWS, WINDOW_LABELS, findSite, hourLabels, lowOf, peakOf, readingFor, shareOf, siteTotalsFor, topSite, totalOf, type WindowName } from "@/lib/energy";
 
 const PERIODS = WINDOWS.map((id) => ({ id, label: WINDOW_LABELS[id] }));
-const TICKS = [0, 6, 12, 18, 23];
+// Each value is one hour's kWh, so it sits at the middle of its hour (buckets mode) and the ticks are hour edges:
+// 0 = 00:00, 24 = the end of the day.
+const TICKS = [0, 6, 12, 18, 24];
+const TICK_LABELS = ["00:00", "06:00", "12:00", "18:00", "24:00"];
 
 export default function Home() {
   const [windowName, setWindowName] = useState<WindowName>("TODAY");
@@ -49,6 +52,8 @@ export default function Home() {
             values={reading}
             labels={hourLabels(reading)}
             ticks={TICKS}
+            tickLabels={TICK_LABELS}
+            buckets
             max={100}
             unit="kWh"
             yUnit="kWh"

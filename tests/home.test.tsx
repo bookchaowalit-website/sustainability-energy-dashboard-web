@@ -76,12 +76,14 @@ describe("energy dashboard", () => {
     press(summary);
     expect(details.open).toBe(false);
     expect($("svg")).not.toBeNull();
-    expect([...host.querySelectorAll(".ds-chart-x span")].map((s) => s.textContent)).toEqual(["00:00", "06:00", "12:00", "18:00", "23:00"]);
-    // Labels use the line's x scale: hour 12 of 0–23 is 52.17%, not the middle.
+    expect([...host.querySelectorAll(".ds-chart-x span")].map((s) => s.textContent)).toEqual(["00:00", "06:00", "12:00", "18:00", "24:00"]);
     const left = [...host.querySelectorAll<HTMLElement>(".ds-chart-x span")].map((s) => s.style.left);
     expect(left[0]).toBe("0%");
-    expect(parseFloat(left[2])).toBeCloseTo((12 / 23) * 100, 3);
+    // Hour buckets: ticks on hour edges, so 12:00 is exactly the middle of the day.
+    expect(left[2]).toBe("50%");
     expect(left[4]).toBe("100%");
+    // Each hour's value sits at the middle of its hour: 13:00–14:00 (the peak) is at 13.5 / 24 of the axis.
+    expect($(".ds-chart-peak")?.getAttribute("x1")).toBe(String((13.5 / 24) * 1000));
   });
 
   it("selects a site and shows its note", () => {
