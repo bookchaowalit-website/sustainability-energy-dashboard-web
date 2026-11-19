@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChartPanel, DashFoot, DashTop, Pill, Segmented, Stat } from "@/components/dashboard-shell";
-import { SITES, WINDOWS, WINDOW_LABELS, findSite, hourLabels, lowOf, peakOf, readingFor, shareOf, totalOf, type WindowName } from "@/lib/energy";
+import { SITES, WINDOWS, WINDOW_LABELS, findSite, hourLabels, lowOf, peakOf, readingFor, shareOf, siteLoadFor, topSite, totalOf, type WindowName } from "@/lib/energy";
 
 const PERIODS = WINDOWS.map((id) => ({ id, label: WINDOW_LABELS[id] }));
 const TICKS = [0, 6, 12, 18, 23];
@@ -16,6 +16,8 @@ export default function Home() {
   const total = totalOf(reading);
   const selected = findSite(selectedSite);
   const period = WINDOW_LABELS[windowName];
+  const average = windowName === "WEEK AVG";
+  const top = topSite();
 
   return (
     <div className="ds">
@@ -26,15 +28,16 @@ export default function Home() {
         <div className="ds-head">
           <div>
             <h1>Electricity load</h1>
-            <p>{period} · hourly, in kWh <Pill tone="grey">Sample data</Pill></p>
+            <p>{period} · hourly, in kWh · {SITES.length} sample sites <Pill tone="grey">Sample data</Pill></p>
           </div>
           <Segmented label="Period" options={PERIODS} value={windowName} onChange={setWindowName} />
         </div>
 
         <ul className="ds-stats" aria-label={`${period} at a glance`}>
           <Stat label="Peak" value={peak.value} unit="kWh" note={`at ${peak.hour}`} />
-          <Stat label="Total" value={total.toLocaleString("en-US")} unit="kWh" note="over 24 hours" />
+          <Stat label={average ? "Daily average" : "Total"} value={total.toLocaleString("en-US")} unit="kWh" note={average ? "average day, 24 hours" : "over 24 hours"} />
           <Stat label="Quietest hour" value={low.value} unit="kWh" note={`at ${low.hour}`} />
+          <Stat label="Top site" value={`${shareOf(top)}%`} note={`${top.name}, of ${SITES.length} sites`} />
         </ul>
 
         <div className="ds-grid">
@@ -47,6 +50,7 @@ export default function Home() {
             ticks={TICKS}
             max={100}
             unit="kWh"
+            yUnit="kWh"
             labelHeading="Hour"
           />
 
@@ -54,7 +58,7 @@ export default function Home() {
             <div className="ds-panel-head">
               <div>
                 <h2 id="sites-heading">Sites</h2>
-                <p>Last observed load, kWh · fixed sample, same for every period</p>
+                <p>Load per site, kWh · {period.toLowerCase()}</p>
               </div>
             </div>
             <ul className="ds-rows">
@@ -63,8 +67,8 @@ export default function Home() {
                   <button type="button" className="ds-row" aria-pressed={site.name === selected.name} onClick={() => setSelectedSite(site.name)}>
                     <span className="ds-row-name"><span className="ds-dot" data-tone={site.tint} aria-hidden="true" />{site.name}</span>
                     <span className="ds-row-detail">{site.detail} · {shareOf(site)}% of all sites</span>
-                    <span className="ds-row-value">{site.load}</span>
-                    <span className="ds-meter" aria-hidden="true"><span style={{ width: `${shareOf(site)}%` }} /></span>
+                    <span className="ds-row-value">{siteLoadFor(site, windowName)}</span>
+                    <span className="ds-meter" data-tone={site.tint} aria-hidden="true"><span style={{ width: `${shareOf(site)}%` }} /></span>
                   </button>
                 </li>
               ))}

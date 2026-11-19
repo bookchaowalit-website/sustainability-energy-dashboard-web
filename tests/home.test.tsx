@@ -30,7 +30,10 @@ describe("energy dashboard", () => {
   it("opens on today with the peak, total and quietest hour of the sample curve", () => {
     expect($("h1")?.textContent).toBe("Electricity load");
     expect(button("Today").getAttribute("aria-pressed")).toBe("true");
-    expect(stats()).toEqual(["Peak94kWhat 13:00", "Total1,159kWhover 24 hours", "Quietest hour9kWhat 04:00"]);
+    expect(stats()).toEqual(["Peak94kWhat 13:00", "Total1,159kWhover 24 hours", "Quietest hour9kWhat 04:00", "Top site48%North workshop, of 3 sites"]);
+    expect($(".ds-head p")?.textContent).toContain("3 sample sites");
+    expect($(".ds-chart-unit")?.textContent).toBe("kWh");
+    expect($(".ds-chart-peak-row span")?.textContent).toBe("Peak 94 kWh · 13:00");
     expect($(".ds-pill")?.textContent).toBe("Sample data");
     expect($("svg")?.getAttribute("aria-label")).toBe("Hourly load, today: lowest 9 kWh at 04:00, peak 94 kWh at 13:00.");
     expect(host.textContent).toContain("No meter, utility or IoT connection");
@@ -41,11 +44,19 @@ describe("energy dashboard", () => {
     expect(button("Week avg").getAttribute("aria-pressed")).toBe("true");
     expect(button("Today").getAttribute("aria-pressed")).toBe("false");
     expect(stats()[0]).toBe("Peak79kWhat 13:00");
+    // The week average is one average day, so the tile says so rather than "Total".
+    expect(stats()[1]).toBe("Daily average973kWhaverage day, 24 hours");
+    const loads = () => [...host.querySelectorAll(".ds-row-value")].map((cell) => cell.textContent);
+    expect(loads()).toEqual(["154", "107", "62"]);
     expect($(".ds-head p")?.textContent).toContain("Week avg · hourly, in kWh");
     press(button("Yesterday"));
     expect(stats()[2]).toBe("Quietest hour7kWhat 03:00");
-    // The sites list is one fixed sample, so it says the period switch does not change it.
-    expect($('[aria-labelledby="sites-heading"] .ds-panel-head p')?.textContent).toBe("Last observed load, kWh · fixed sample, same for every period");
+    expect(stats()[1]).toBe("Total1,130kWhover 24 hours");
+    // The sites follow the period too.
+    expect($('[aria-labelledby="sites-heading"] .ds-panel-head p')?.textContent).toBe("Load per site, kWh · yesterday");
+    expect(loads()).toEqual(["179", "125", "72"]);
+    press(button("Today"));
+    expect(loads()).toEqual(["184", "128", "74"]);
   });
 
   it("shows every hour as a table and back as a chart", () => {
@@ -57,7 +68,7 @@ describe("energy dashboard", () => {
     expect(rows).toHaveLength(24);
     expect(rows[13].textContent).toBe("13:0094 (peak)");
     expect(rows[13].getAttribute("data-peak")).toBe("true");
-    expect(summary.textContent).toBe("Show table");
+    expect(summary.textContent).toBe("Show tableShow chart");
     press(summary);
     expect(details.open).toBe(false);
     expect($("svg")).not.toBeNull();
@@ -73,6 +84,8 @@ describe("energy dashboard", () => {
     const rows = () => [...host.querySelectorAll(".ds-row")];
     expect(rows().map((row) => row.getAttribute("aria-pressed"))).toEqual(["true", "false", "false"]);
     expect(rows()[0].textContent).toContain("48% of all sites");
+    // Each site's dot and share bar carry the same tone.
+    expect([...host.querySelectorAll(".ds-row .ds-meter")].map((m) => m.getAttribute("data-tone"))).toEqual(["amber", "blue", "green"]);
     press(button("Learning hall"));
     expect(rows().map((row) => row.getAttribute("aria-pressed"))).toEqual(["false", "true", "false"]);
     expect($(".ds-callout")?.textContent).toBe("Learning hallCheck cooling after 13:00, when the building peaks.");

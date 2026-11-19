@@ -43,10 +43,21 @@ export function lowOf(reading: number[]): { value: number; hour: string } {
   return { value, hour: `${String(reading.indexOf(value)).padStart(2, "0")}:00` };
 }
 
-/** A site's share of all sites' load, as a whole percent. */
+/** A site's share of all sites' load, as a whole percent (the same in every period, since each site scales alike). */
 export function shareOf(site: Site, sites: Site[] = SITES): number {
   const all = totalOf(sites.map((entry) => entry.load));
   return all ? Math.round((site.load / all) * 100) : 0;
+}
+
+/** A site's load for a period: its sample load scaled by how that period's day compares with today's. */
+export function siteLoadFor(site: Site, windowName: WindowName): number {
+  const today = totalOf(HOURS);
+  return today ? Math.round((site.load * totalOf(readingFor(windowName))) / today) : 0;
+}
+
+/** The site with the biggest share. */
+export function topSite(sites: Site[] = SITES): Site {
+  return sites.reduce((top, site) => (site.load > top.load ? site : top), sites[0]);
 }
 
 export function findSite(name: string): Site {
