@@ -213,6 +213,8 @@ describe("dashboard shell", () => {
 
   it("styles tones, the selected-row track, the header wrap and the panel order in the CSS", () => {
     const css = readFileSync(join(process.cwd(), "app/dashboard-shell.css"), "utf8");
+    expect(css).toContain(".ds-stat-note { color: var(--ds-muted); font-size: 14px; }");
+    expect(css).toContain(".ds-row-detail { grid-column: 1; min-width: 0; overflow-wrap: anywhere; color: var(--ds-muted); font-size: 14px; }");
     // A dot and its row's bar share one token colour, never a light hex under 3:1.
     expect(css).toContain('.ds-dot[data-tone="amber"], .ds-meter[data-tone="amber"] span { background: var(--ds-amber); }');
     expect(css).toContain('.ds-dot[data-tone="red"], .ds-meter[data-tone="red"] span { background: var(--ds-red); }');
